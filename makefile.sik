@@ -1,0 +1,29 @@
+# makefile
+#
+# The actions included in this make file are:
+#  Compile::C++ Compiler
+#  Link::Linker
+
+.SUFFIXES: .c .obj
+
+.all: \
+    f:\projekte\mastermind\mmind.exe
+
+.c.obj:
+    @echo " Compile::C++ Compiler "
+    icc.exe /Ss /Ti /Gd+ /Gf+ /Gi+ /O+ /G5 /Fb /Fo"%|dpfF.obj" /C %s
+
+f:\projekte\mastermind\mmind.exe: \
+    f:\projekte\mastermind\main.obj \
+    makefile
+    @echo " Link::Linker "
+    icc.exe @<<
+     /B" /pmtype:pm /packc /packd /e:2 /optfunc "
+     /Fef:\projekte\mastermind\mmind.exe
+     f:\projekte\mastermind\main.obj
+
+f:\projekte\mastermind\main.obj: \
+    f:\projekte\mastermind\main.c \
+    {f:\projekte\mastermind;$(INCLUDE);}defines.h \
+    {f:\projekte\mastermind;$(INCLUDE);}mastermind.h \
+    makefile

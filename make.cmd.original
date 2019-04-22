@@ -1,0 +1,8 @@
+@nmake
+@nmake /f makeglobal
+@del mmind.dll
+@nmake /f makedllde
+@copy mmindde.dll deutsch
+@del mmind.dll
+@nmake /f makedllen
+@copy mminden.dll englisch

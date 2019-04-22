@@ -1,0 +1,23 @@
+
+f:\projekte\mastermind\main.obj: \
+    f:\projekte\mastermind\main.c \
+    {f:\projekte\mastermind;$(INCLUDE);}defines.h \
+    {f:\projekte\mastermind;$(INCLUDE);}mastermind.h \
+    makefile
+
+f:\projekte\mastermind\global.res: \
+    f:\projekte\mastermind\global.rc \
+    {$(INCLUDE)}rosa.ptr \
+    {$(INCLUDE)}tuerkies.ptr \
+    {$(INCLUDE)}gruen.ptr \
+    {$(INCLUDE)}gelb.ptr \
+    {$(INCLUDE)}rot.ptr \
+    {$(INCLUDE)}blau.ptr \
+    {$(INCLUDE)}MMIND.ICO \
+    {$(INCLUDE)}defines.h \
+    makefile
+
+f:\projekte\mastermind\mastermind.res: \
+    f:\projekte\mastermind\mastermind.rc \
+    {$(INCLUDE)}defines.h \
+    makefile

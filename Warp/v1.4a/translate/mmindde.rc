@@ -1,0 +1,197 @@
+/**********************************************/
+/* This is the language-dependent file for    */
+/* Mastermind/2. Please translate everything  */
+/* that's necessary into your language.       */
+/* For some texts I have added an additional  */
+/* annotation, explanation etc. If you are    */
+/* unsure about something please take either  */
+/* a look at this file in another language or */
+/* contact the author.                        */
+/* Please try always to make your translated  */
+/* text about the same length as the original.*/
+/* This will prevent the text from reaching   */
+/* out of his boundaries.                     */
+/*                                            */
+/* TIP: If you edit this file with OS/2's     */
+/*      enhanced editor epm you can turn on   */
+/*      keyword-highlighting. This will give  */
+/*      better results for viewing.           */
+/*                                            */
+/* RenÇ Auberger (r.auberger@gmx.net)         */
+/* 20 Feb 1999                                */
+/**********************************************/
+
+#include <os2.h>
+#include "defines.h"
+
+/**********************************************/
+/* The menu for the game. The tilde ~         */
+/* indicates which character will be          */
+/* underlined in the menu and can be pressed  */
+/* on the keyboard for quick access. Set it   */
+/* in front of the appropriate characters in  */
+/* your language.                             */
+/**********************************************/
+MENU ID_MAIN
+BEGIN
+   SUBMENU "~Mastermind", IDM_MASTERMIND                 /* should not be changed */
+   BEGIN
+      MENUITEM "~Neues Spiel starten", IDM_START              /* translate the following */
+      MENUITEM "~Pause\tPause", IDM_PAUSE, 0, 0x4000
+      MENUITEM "~Spiel abbrechen\tEsc", IDM_CANCEL, 0, 0x4000
+      MENUITEM "", IDM_SEPARATOR1, 0x4
+      MENUITEM "~Bestenliste...", IDM_HIGHSCORE
+      MENUITEM "", IDM_SEPARATOR2, 0x4
+      MENUITEM "~Farben mehrfach verwenden", IDM_MULTIPLE, 0, 0x2000
+      SUBMENU  "Spr~ache", IDM_LANGUAGE
+      BEGIN
+      END
+      MENUITEM "~AuswÑhlen der Pins...", IDM_PINSELECTION
+      MENUITEM "", IDM_SEPARATOR3, 0x4
+      MENUITEM "~Mastermind beenden\tAlt+F4", IDM_EXIT
+   END
+   SUBMENU "~Hilfe", IDM_HELP
+   BEGIN
+      MENUITEM "~Allgemeine Hilfe...\tF1", IDM_GENERALHELP
+      MENUITEM "~Spielregeln...", IDM_RULES
+      MENUITEM "~Bedienung...", IDM_HOWTOPLAY
+      MENUITEM "~Lizenz...", IDM_LICENSE
+      MENUITEM "", IDM_SEPARATOR4, 0x4
+      MENUITEM "~öber...", IDM_ABOUT
+   END
+END
+
+/**********************************************/
+/* This will be the about-dialog shown at     */
+/* start and after selecting Help/about.      */
+/* Please try to keep the translated texts at */
+/* about the same length as the original ones.*/
+/**********************************************/
+DLGTEMPLATE DLG_ABOUT LOADONCALL MOVEABLE DISCARDABLE
+BEGIN
+    DIALOG  "öber Mastermind/2", DLG_ABOUT, 0, 0, 0, 0, WS_VISIBLE | FS_SCREENALIGN
+    BEGIN
+        CONTROL         IDB_LOGO, IDB_LOGO, 2, 67, 18, 20, WC_STATIC,
+                        SS_BITMAP | WS_GROUP | WS_VISIBLE
+        CTEXT           "Dieses Programm ist Postcardware. Sie dÅrfen es frei" , IDT_ABOUT1, 4, 55, 168, 8
+        CTEXT           "verteilen, wenn Sie den Autor zuvor darÅber informieren." , IDT_ABOUT2, 4, 48, 168, 8
+        CTEXT           "FÅr die kostenlose Registrierung reicht eine Postkarte an:" , IDT_ABOUT3, 4, 41, 168, 8
+        CTEXT           "RenÇ Auberger, Breitensteiner Str. 11" , IDT_ABOUT4, 4, 31, 168, 8
+        CTEXT           "D-71032 Bîblingen, Germany" , IDT_ABOUT5, 4, 24, 168, 8
+    END
+END
+
+/**********************************************/
+/* The highscore-dialog. Only the title is    */
+/* needed, the rest is specified down below.  */
+/**********************************************/
+DLGTEMPLATE DLG_HIGHSCORE LOADONCALL MOVEABLE DISCARDABLE
+BEGIN
+    DIALOG  "Mastermind/2 Bestenliste", DLG_HIGHSCORE, 0, 0, 0, 0, WS_VISIBLE | FS_SCREENALIGN, FCF_TITLEBAR
+    BEGIN
+    END
+END
+
+DLGTEMPLATE DLG_QUERYNAME LOADONCALL MOVEABLE DISCARDABLE
+BEGIN
+    DIALOG  "Mastermind/2 Bestenliste", DLG_QUERYNAME, 0, 0, 0, 0, WS_VISIBLE | FS_SCREENALIGN, FCF_TITLEBAR
+    BEGIN
+         CTEXT           "Herzlichen GlÅckwunsch!!!", IDT_QNT1, 5, 65, 205, 8
+         CTEXT           "", IDT_QNT2, 5, 50, 205, 8                    /* These two text's will be set during the runtime. But */
+         CTEXT           "", IDT_QNT3, 5, 42, 205, 8                    /* they will be read from a little bit further down. */
+         LTEXT           "Dein Name:", IDT_QNT4, 35, 26, 40, 8          /* The length of this one shouldn't change too much. */
+         ENTRYFIELD      "", IDE_QN, 76, 28, 91, 8, ES_LEFT | ES_MARGIN
+    END
+END
+
+
+DLGTEMPLATE DLG_PINSELECTION LOADONCALL MOVEABLE DISCARDABLE
+BEGIN
+   DIALOG  "Mastermind/2 AuswÑhlen der Pins", DLG_PINSELECTION, 0, 0, 0, 0, WS_VISIBLE | FS_SCREENALIGN, FCF_TITLEBAR
+   BEGIN
+      CTEXT              "Welche sechs Pins sollen verwendet werden?", IDT_SELECTPIN1, 3, 114, 139, 8
+   END
+END
+
+
+/**********************************************/
+/* Ok, now the the final but biggest part of  */
+/* your work. And please remember: try to     */
+/* keep it at about the same length.          */
+/**********************************************/
+STRINGTABLE
+BEGIN
+   IDS_LANGUAGE                          "Deutsch"            /* please enter the name of the language, e.g. English, Deutsch, ... */
+   IDS_STARTNEWGAME                      "neues Spiel starten"
+   IDS_TIMERERROR                        "Das Programm konnte den Zeitgeber nicht starten. Das Programm wird daher beendet. Versuchen Sie es nochmals zu starten. Falls das nicht das Problem behebt, setzen Sie sich bitte mit dem Autor in Kontakt."
+   IDS_NOTSTARTED                        "Spiel noch nicht gestartet."
+   IDS_GUESS                             "Rate meine Farben:"
+   IDS_AVAILABLE                         "VerfÅgbare Farben:"
+   IDS_DROPHERE                          "Farben hier fallenlassen:"
+   IDS_RIGHTCOLOR                        "richtige Farbe und"
+   IDS_WRONGPLACE                        "falsche Stelle:"
+   IDS_RIGHTPLACE                        "richtige Stelle:"
+   IDS_GAMEPAUSED                        "Spiel unterbrochen"
+   IDS_EXIT                              "Mastermind/2 beenden"       /* Title for dialog                           */
+   IDS_REALLYQUIT                        "Willst Du wirklich beenden? Ein Spiel lÑuft noch und wÅrde abgebrochen!"
+   IDS_FIRSTTRY                          "erster Versuch"
+   IDS_SECONDTRY                         "zweiter Versuch"
+   IDS_THIRDTRY                          "dritter Versuch"
+   IDS_FOURTHTRY                         "vierter Versuch"
+   IDS_FIFTHTRY                          "fÅnfter Versuch"
+   IDS_SIXTHTRY                          "sechster Versuch"
+   IDS_SEVENTHTRY                        "siebenter Versuch"
+   IDS_EIGHTTHTRY                        "achter Versuch"
+   IDS_NINETHTRY                         "noch zwei Chancen"
+   IDS_TENTHTRY                          "Oh oh, letzter Versuch..."
+   IDS_START                             "neues Spiel starten"    /* Title for dialog                           */
+   IDS_REALLYSTART                       "Willst Du wirklich neu starten? Ein Spiel lÑuft noch und wÅrde abgebrochen!"
+   IDS_CANCEL                            "Spiel abbrechen"        /* Title for dialog                           */
+   IDS_REALLYCANCEL                      "Willst Du das Spiel wirklich abbrechen? Wenn Du ein Spiel abbrichst, kannst Du Dich nicht in die Bestenliste eintragen. Um das Spiel nur vorÅbergehend anzuhalten, wÑhle jetzt 'Nein' und dann im MenÅ 'Mastermind / Pause'."
+   IDS_PAUSE                             "~Pause\tPause"            /* Text for changing menu-item. Should be same as above in the menu-definition */
+   IDS_UNPAUSE                           "~Weiter\tPause"           /* Text for changing menu-item.               */
+   IDS_NOHIGHSCORE                       "Noch keine EintrÑge vorhanden!"
+   IDS_OHNO                              "Oh nein, Du hast es nicht erraten. Du hast"   /* These three will are used for the          */
+   IDS_MINUTESANDLOOSE                   "Minuten und"                            /* sentence if you loose. Minutes             */
+   IDS_SECONDSTOWASTE                    "Sekunden gebraucht um 10 Versuche zu verschwenden..."           /* and seconds are filled in from the program */
+   IDS_DAMN                              "Mist!"     /* Title for messagebox if you loose */
+   IDS_TIME                              "Zeit:"
+   IDS_YOUNEEDED                         "Du hast"               /* If you win and can enter your     */
+   IDS_TRIES                             "Versuche ("                  /* name into the highscores this     */
+   IDS_MINUTESANDWIN                     "Minuten und"              /* text will be displayed and        */
+   IDS_SECONDS                           "Sekunden) gebraucht,"                /* the program fills in the minutes, */
+   IDS_THATSRANK                         "das ist Rang"              /* seconds and the rank              */
+   IDS_OFTHEHIGHSCORES                   "in der Bestenliste!"       /* in the highscores.                */
+   IDS_YOUONLYNEEDED                     "Du hast nur 1 Versuch ("                                         /* If you need only one         */
+   IDS_MINUTESANDONE                     "Minuten und"                                                     /* try this message is diplayed */
+   IDS_SECONDSONE                        "Sekunden) gebraucht, geh' lieber"                                       /* and minutes and seconds are  */
+   IDS_CASINO                            "ins Spielkasino als hier Dein GlÅck mit Mastermind zu verschwenden" /* filled in                    */
+   IDS_AFTERRANK                         "!"                                                               /* End of the sentence. Maybe some languages need it for words, e.g. "Blah blurb. That's rank 3!" in german "Blah blub. Das ist der 3. Rang!" so you would change it into ". Rang!" */
+   IDS_OPENERROR                         "Die Datei mit der Bestenliste konnte nicht zum Schreiben geîffnet werden!\n\nôffnen der Datei wiederholen?"
+   IDS_ERRORTITLE                        "Mastermind/2 Fehler"       /* Title for dialog                           */
+   IDS_HELPTITLE                         "Mastermind/2 Hilfe"        /* Title for help-window                      */
+   IDS_HELPERROR                         "Konnte Hilfe nicht erstellen"
+   IDS_HELPERROR2                        "Konnte Hilfe nicht mit Fenster assoziiren!"
+   IDS_WRITEINIERROR                     "Konnte die Einstellungen nicht auf die Festplatte sichern (Datei mmind.ini)!\n\nNochmals versuchen?"
+   IDS_OKBUTTON                          "OK"                    /* Text for Pushbuttons */
+   IDS_CANCELBUTTON                      "Abbrechen"             /* Text for Pushbuttons */
+   IDS_HIGHSCORENAME                     "Name"               /* Title for column in highscore */
+   IDS_HIGHSCORETIME                     "Zeit"               /* Title for column in highscore */
+   IDS_HIGHSCORETRIES                    "Versuche"           /* Title for column in highscore */
+   IDS_HIGHSCORERANK                     "Rang"               /* Title for column in highscore */
+END
+/**********************************************/
+/* You've reached the finish. Thanks for your */
+/* work.                                      */
+/**********************************************/
+
+ICON    ID_MAIN     MMIND.ICO
+BITMAP  IDB_LOGO    logo.bmp
+
+ACCELTABLE ID_MAIN PRELOAD
+{
+   VK_PAUSE, IDM_PAUSE,                  AF_VIRTUALKEY
+   VK_ESC, IDM_CANCEL,                   AF_VIRTUALKEY
+}
+
+

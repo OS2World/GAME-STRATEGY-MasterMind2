@@ -1,0 +1,33 @@
+.SUFFIXES: .c .obj .rc .res
+
+.all: f:\projekte\mastermind\mminden.dll
+
+.rc.res:
+    @echo " Compile::ResourceCompiler "
+    rc -r %s %|dpfF.res
+
+c.obj:
+    @echo " Compile::C++ Compiler "
+    icc.exe /C+ %s
+
+f:\projekte\mastermind\mminden.obj: \
+    f:\projekte\mastermind\mminden.c \
+    makedllen
+
+f:\projekte\mastermind\mminden.dll: \
+    f:\projekte\mastermind\mminden.obj \
+    makedllen \
+    f:\projekte\mastermind\mastermind.res \
+    f:\projekte\mastermind\mminden.def
+    ilink.exe @<<
+    /DLL /packd /e:2
+    mminden.obj
+    mminden.def
+<<
+    rc.exe f:\projekte\mastermind\mastermind.res f:\projekte\mastermind\mminden.dll
+
+f:\projekte\mastermind\mastermind.res: \
+    f:\projekte\mastermind\mastermind.rc \
+    makedllen \
+    f:\projekte\mastermind\defines.h \
+

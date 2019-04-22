@@ -1,0 +1,42 @@
+History of Mastermind/2
+~~~~~~~~~~~~~~~~~~~~~~~
+
+ 8. Feb 1999: Version 1.3 is ready and uploaded to hobbes on 9. Feb 1999
+              Have I been drunken while testing the second edition of v1.2?
+              I introduced another bug with the "n-th try" button at every
+              first try and didn't see it. Thanks to my girlfriend it was
+              found quickly.
+              Now I think we a have a button that hopefully works as supposed
+              and that should be celebrated with an small step in the
+              version :)
+
+ 5. Feb 1999: Sorry, due to incomplete testing the "n-th try"-button did not
+              became a "start new game"-button after you finished playing. In
+              all other cases (ok, there are not much) it worked well. This
+              is fixed now, the version will remain 1.2 because no new
+              features were added. Fixed version uploaded to hobbes on 8. Feb
+
+ 3. Feb 1999: Version 1.2 is ready and uploaded to hobbes
+              (leo seems to have discarded it so future versions will only
+              be found on hobbes)
+              Changes are:
+              * the button "n-th try" becomes a "start new game" button while
+                no game is running (so you don't always have to access the
+                menu)
+              * updated the installation program: now it creates first the
+                desktop-objects and then launches the user's guide
+              * updated the user's guide
+
+20. Jan 1999: Version 1.1 is ready and uploaded to hobbes and leo
+              Changes are:
+              * the "do you really want to exit" question is only
+                asked if a game is running
+              * your settings are saved and reloaded next time
+                (there is currently only one setting: multiple colors)
+
+ 6. Jan 1999: Version 1.0 is ready and uploaded to hobbes and leo
+              This is the first release of Mastermind/2
+
+
+If you have any suggestions for improvement please write to r.auberger@gmx.net,
+subject: Mastermind/2. Thank you!

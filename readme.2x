@@ -1,0 +1,78 @@
+*******************************
+Mastermind/2             Readme
+version 1.3       February 1999
+*******************************
+
+contents:
+
+0. Requirements
+1. Installation
+2. License
+3. Known Bugs
+
+
+*******************************
+0. Requirements
+*******************************
+This version of Mastermind/2 is intended to run on OS/2 2.x. It will run on
+OS/2 Warp or higher, too, but if you are interested in a version optimized for
+OS/2 Warp 3, Warp 4 or higher please write to r.auberger@gmx.net with subject
+"Mastermind/2".
+
+There are no special hardware requirements. Each system that runs OS/2 should
+be enough for Mastermind/2. This is because Mastermind/2 uses very little
+memory and the program itself is small, too.
+
+
+
+*******************************
+1. Installation
+*******************************
+a) Unzip the archive in an empty directory. There is nothing special you must
+   take care of, just unzip. The directory will be the final directory where
+   Mastermind/2 will stay after installation.
+b) Run the command-file install.cmd. This program will create program icons
+   for Mastermind/2 on your desktop. You are advised to move it into the folder
+   "Programs / Games". Due to different names of this folder in the different
+   language versions of OS/2 the installation-program won't do that for you.
+   After that the user's guide is started.
+
+
+*******************************
+2. License
+*******************************
+This program is postcardware. That means: if you like it and play it you are
+engaged to send a picture postcard to the author. This will inform me of how
+many people use it and if it is worth to do some future versions  - which may
+contain sounds, real-time 3D animations, support of force-feedback joysticks
+etc :-)
+
+And it will show me if there are some OS/2ers out there who play games :-)
+Perhaps it will also drive me to develop some more programs (for OS/2 of
+course). You may distribute this program freely and are not allowed to charge
+for it (except the costs you have for distribution). You are welcome to put it
+on CD-ROM collections etc after contacting the author. To get your free
+license write to (include your e-mail address if you want to be notified of
+future versions):
+
+Ren‚ Auberger
+Breitensteiner Str. 11
+D-71032 B”blingen
+Germany
+
+If you want to use e-mail instead (not for registering please, I like picture
+postcards from all over the world): r.auberger@gmx.net, subject: Mastermind/2.
+
+
+*******************************
+3. Known Bugs
+*******************************
+At the moment there are NO serious bugs known!
+In some rare cases it can happen after dropping a colored pin that it is not
+entirely drawn. But this seems to be a bug in "animated mouse pointers" which
+I am using. Just force the affected pin to be redrawn (e.g by moving something
+over the window or moving the window out of the screen or pausing&unpausing
+the game or or or...).
+Bugreports (and correnction of my english - I am not a native speaker) are
+welcome. Please write to r.auberger@gmx.net, subject: Mastermind/2.
+

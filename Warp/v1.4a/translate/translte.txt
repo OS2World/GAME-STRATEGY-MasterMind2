@@ -1,0 +1,32 @@
+How to translate Mastermind/2:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+a) copy the files mminden.rc and mminden.ipf to mmind??.rc and mmind??.ipf
+   where ?? is a short code for the language (e.g. fr for french or de for
+   deutsch [that's how german is called in german])
+
+b) translate the files mmind??.rc and .ipf into your language. The files
+   include some additional file-specific information.
+
+c) create a file mmind??.nlv (that's for the install-program) with a simple
+   text editor. The file must include in the first line the name of the
+   language, the name of the user's guide in the second line and in the third
+   line how you would call the readme-file in your language (the filename stays
+   readme.txt, it's just for the label of the icon).
+   The fourth line contains the word for "welcome" in your language that you
+   used in the title of the welcome-page in mmind??.ipf, e.g. 'welcome' for the
+   english version or 'willkommen' for german (where the title is "Willkommen
+   bei Mastermind/2"). This is used to find the welcome-page for displaying it.
+
+d) create a zip-archive containing these three files and send it to
+   r.auberger@gmx.net with subject Mastermind/2
+
+
+Additional information:
+~~~~~~~~~~~~~~~~~~~~~~~
+As an example there are the files for english and german included. If you
+are unsure you may want to take a look into these files first before contacting
+the author.
+Life is much easier with keywordhighlighting. I included the neccessary files
+for epm in this archive. Just copy them into x:\os2\apps where x: is your boot
+drive.

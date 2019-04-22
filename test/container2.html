@@ -1,0 +1,287 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<LINK REV=MADE HREF="mailto:editor@edm2.com">
+<TITLE>EDM/2 - Programming the Container Control - Part 2/3</TITLE>
+</HEAD>
+
+<BODY TEXT="#000000" LINK="#CC0000" VLINK="#993333" BGCOLOR="#FFFBFB"
+  BACKGROUND="../common/images/bg.gif">
+
+<!-- ====================================================== -->
+<!--                           Map                          -->
+<!-- ====================================================== -->
+<MAP NAME="Linkbar">
+<AREA ALT="Feedback" COORDS="190,1,260,14"
+   HREF="mailto:feedback@edm2.com">
+<AREA ALT="Search" COORDS="280,1,335,14"
+   HREF="../common/search.html">
+<AREA ALT="Top" COORDS="355,1,390,14"
+   HREF="../index.html">
+<AREA ALT="Backward" COORDS="400,1,475,14"
+   HREF="newwinclass1.html">
+
+
+</MAP>
+
+<TABLE WIDTH="100%">
+<TR>
+<TD VALIGN=TOP WIDTH="15%">
+<IMG BORDER=0 WIDTH=56 HEIGHT=18 ALT="EDM/2"
+  HSPACE=10 SRC="../common/images/edm2sm.gif">
+</TD>
+<TD WIDTH="85%">
+
+<H2>Programming the Container Control - Part 2/3</H2>
+
+<P>Written by <A HREF="../common/authors/lsalomon.html">Larry Salomon, Jr.</A>
+
+</TD>
+</TR>
+</TABLE>
+
+<!-- ====================================================== -->
+<!--                         Linkbar                        -->
+<!-- ====================================================== -->
+<P><IMG BORDER=0 WIDTH=560 HEIGHT=14 ALT="" USEMAP="#Linkbar"
+   SRC="../common/images/lastarticlebar.gif">
+
+<P><TABLE WIDTH="100%">
+<TR>
+<TD WIDTH="10%">&nbsp;</TD>
+<TD WIDTH="80%">
+
+<TABLE BORDER=0 CELLSPACING=0 CELLPADDING=4 WIDTH="400">
+<TR>
+   <TD ALIGN=CENTER VALIGN=MIDDLE>
+      <A HREF="../0103/container1.html"><SMALL>Part1</SMALL></A></TD>
+   <TD ALIGN=CENTER VALIGN=MIDDLE>
+      <SMALL>Part2</SMALL></TD>
+   <TD ALIGN=CENTER VALIGN=MIDDLE>
+      <A HREF="../0105/container3.html"><SMALL>Part3</SMALL></A></TD>
+</TR>
+</TABLE>
+
+<H2>Where were we?</H2>
+
+Last month I briefly introduced (in that oh-so-poor writing style that
+makes me unique) the container control and some of the programming basics
+that everyone should know.  This month, we will continue this trek into the
+unknown by describing the tree view as well as some other nifty things.
+Also, we will write our first application using the container, on which we
+will build in next month's installment.
+
+<H3>From Another Viewpoint</H3>
+
+<P>As a quick note, the name and text views were omitted last month because
+they are - from a programmer's perspective - identical to the icon view.
+
+<H2>The Wood Nymph's Delight</H2>
+
+<P>The tree view should be a highly familiar one; it parallels nicely with the
+directory structure of a hard disk and has been used in the File Manager
+(from OS/2 1.x) and the Help Manager as well as many other applications.
+It also has three subviews that can be specified in the CM_SETCNRINFO
+message:  tree icon view, tree name view, and tree text view (these are
+specified by "or-ing" the CV_ICON, CV_NAME, or CV_TEXT flags with the
+CV_TREE flag in the flWindowAttr field, respectively).  The difference
+between these views is in the way the data is represented:  icon view
+displays an icon with the text to the right and to the left is a separate
+bitmap indicating whether the item is expanded or collapsed (if
+applicable); name view is the same as icon view except that the
+expanded/collapsed indicator is indicated in the icon; the text view
+provides only the text string with the expanded/collapsed indicator as a
+separate bitmap to the left.
+
+<P>Note the difference between icon and name view.  Remember when, in the
+beginning of the series, it was mentioned that there are a few differences
+between using the MINIRECORDCORE and RECORDCORE structure?  This is one of
+those differences; since only the RECORDCORE structure has different fields
+for the expanded and collapsed icons, the name view cannot be used with the
+CCS_MINIRECORDCORE style.
+
+<P>When inserting records into the container, the parent record is specified
+in the pRecordParent field of the RECORDINSERT structure.  In the icon
+view, we specified this as NULL, since there is not parent/child
+relationships in that view.  However, in the tree views, this is
+particularly important because it specifies how the records are to be
+displayed.  All records that have children will be displayed by adding an
+expanded/collapsed indicator to its left.  If, by some action of the user,
+you switch to any other non-tree view, all but the top-level records are
+hidden.
+
+<H3>Notifications</H3>
+
+<P>In addition to the "normal" notifications, the container provides 2
+notifications specific to the tree view:
+<dl>
+<dt><B>CN_COLLAPSETREE</B></dt>
+<dd>This is sent to the owner after the container collapses a
+subtree. mpParm2 points to the record that was collapsed.</dd>
+<dt><B>CN_EXPANDTREE</B></dt>
+<dd>This is sent to the owner after the container expands a
+subtree. mpParm2 points to the record that was expanded.</dd>
+</dl>
+
+<H2>CNR2 - A Sample Application</H2>
+
+<P>Now let us delve into the depths of our first sample application; it not
+only showcases the container control, but it also contains some nifty
+tricks that I think you'll find useful.  The structure is that of a
+"typical" PM application and it should not be new to you.  In the code, I
+have placed several "landmarks"; these are marked by placing a comment of
+the form "@n" (where `n' is the landmark number) starting at column 55.
+These landmarks are used to point out things of interest and are discussed
+in more detail later.
+
+<P>The application does nothing more than add a record for each month of each
+year for the number of years specified in NUM_YEARS.  This is to show how
+the tree view is used.  A popup menu is displayed whenever the system
+key/mouse sequence is pressed, allowing to you switch between icon and tree
+views, etc.
+
+<H3>Landmark 1</H3>
+
+<P>This is simply to point out the typedefs used.
+<pre>
+typedef struct _CLIENTDATA {                          // @1
+   USHORT usSzStruct;         // Size of the structure
+   HAB habAnchor;             // Anchor block of the window
+   HWND hwndFrame;            // Frame of the client (== parent)
+   HWND hwndCnr;              // Container window
+   HPOINTER hptrYear;         // Icon for the year records
+   HPOINTER hptrMonth;        // Icon for the month records
+   HWND hwndWndMenu;          // Menu window
+} CLIENTDATA, *PCLIENTDATA;
+
+typedef struct _MYCNRREC {
+   MINIRECORDCORE mrcCore;    // Base structure
+   CHAR achText[64];          // Icon text
+} MYCNRREC, *PMYCNRREC;
+
+//-------------------------------------------------------------------------
+// PFNSRCH is used by searchCnr().  The parameters are:  container window
+// handle, record pointer, and user-data pointer, respectively.
+//-------------------------------------------------------------------------
+typedef BOOL (*PFNSRCH)(HWND,PVOID,PVOID);
+</pre>
+
+<P>CLIENTDATA is the instance data for the client window.  Granted, we could
+have used global variables, but that is poor programming practice so we
+avoid doing this (the only global we use is an constant array of pointers
+to the names of the months).
+
+<P>MYCNRREC is the definition for the container records.  Note that we are
+using the MINIRECORDCORE structure.
+
+<P>PFNSRCH is a pointer to a function accepting three parameters and returning
+a boolean.  It is used in a very interesting way that you'll see later.
+
+<H3>Landmark 2</H3>
+
+<P>This is only to point out that while it is highly recommended that you
+allocate and insert as many records as possible each time sometimes it
+simply isn't possible.  We have to allocate/insert each year separately
+followed by the twelve months.
+
+<H3>Landmark 3</H3>
+
+<P>Since we specified FALSE in the fInvalidateRecord field of the RECORDINSERT
+structure, we have to send a CM_INVALIDATERECORD message to update the
+container.
+
+<H3>Landmark 4</H3>
+
+<P>This entire procedure is useful, since (as described in a previous issue of
+the magazine) you cannot specify MIS_CONDITIONALCASCADE in a resource file.
+It should also be noted that since the cascade button takes up a bit more
+space, it is helpful to add a few blank spaces in the menu template to
+account for this.  As a general rule, I use three blanks.
+
+<H3>Landmark 5</H3>
+
+<P>Here is another useful procedure; it performs a recursive, post-traversal
+search of the container, calling a user-specified procedure at each record
+to see if it matches the criteria also specified by the caller.  If you've
+ever wondered what a use for reserved parameter is, here is one.  We use
+the reserved parameter to specify the record we are currently checking; by
+having the user specify NULL, we can check to see if this is the initial
+call.
+
+<P>Of course, we could have eliminated the reserved parameter and had this
+procedure call another procedure with a reserved parameter to remove the
+burden from the caller, but that's too easy.  (* grin *)
+
+<H3>Landmark 6</H3>
+
+<P>This is to point out the allocation and initialization of the client
+instance data.  Note that the cleanup is done in the WM_DESTROY processing.
+
+<H3>Landmark 7</H3>
+
+<P>This is to show a bug in the container - if the user uses the mouse to
+invoke the popup menu, the container sends us a WM_CONTROL message. Not so
+if the user uses the keyboard, thus we duplicate the code and check for the
+WM_CONTEXTMENU message.
+
+<H3>Landmark 8</H3>
+
+<P>Finally, we invoke the searchCnr() function specifying a pointer to a
+boolean that contains the desired select state.  The searchSelect()
+function is an interesting one.
+<pre>
+BOOL searchSelect(HWND hwndCnr,PMYCNRREC pmcrRecord,PBOOL pbSelect)
+//-------------------------------------------------------------------------
+// This function is used to select/deselect all records.  Note that it
+// always returns FALSE, so that searchCnr() will traverse the entire
+// record list.
+//
+// Input:  hwndCnr - handle of the container window
+//         pmcrRecord - pointer to the container record
+//         pbSelect - pointer to a BOOL specifying whether to select the
+//                    record or not
+//-------------------------------------------------------------------------
+{
+   WinSendMsg(hwndCnr,
+              CM_SETRECORDEMPHASIS,
+              MPFROMP(pmcrRecord),
+              MPFROM2SHORT(*pbSelect,CRA_SELECTED));
+   return FALSE;
+}
+</pre>
+
+<P>See how it simply sets the record's select state and always returns FALSE -
+indicating that this record does not match - forcing searchCnr() to
+traverse the entire container.
+
+<H3>That's It!</H3>
+
+<P>That is all there is to it!  Note that while there is a lot of setup
+involved, the container is no more difficult to use than any of the other
+"standard" controls.
+
+<H2>Summary</H2>
+
+<P>We have seen how tree views can be used for hierarchical structures and how
+they are not much different that the icon, name, and text views described
+last month.  We have used these concepts and introduced new ones in a
+sample application which will be used as a scaffold to add new features in
+future installments of this series.
+
+<P>Next month we will describe the details view, selection states, direct
+editing, and possibly other ideas and will incorporate these concepts into
+our sample application.
+
+</TD>
+<TD WIDTH="10%">&nbsp;</TD>
+</TR>
+</TABLE>
+
+<!-- ====================================================== -->
+<!--                         Linkbar                        -->
+<!-- ====================================================== -->
+<P><IMG BORDER=0 WIDTH=560 HEIGHT=14 ALT="" USEMAP="#Linkbar"
+   SRC="../common/images/lastarticlebar.gif">
+
+</BODY>
+</HTML>

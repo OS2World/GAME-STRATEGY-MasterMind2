@@ -1,0 +1,126 @@
+
+int GetLanguageDlls(void)
+/******************************************************/
+/* Checks for language DLLs and updates the menu      */
+/******************************************************/
+{
+   HDIR hdirFileHandle = HDIR_SYSTEM;
+   FILEFINDBUF3 FindBuffer = {0};
+   ULONG ulResultBufLen = sizeof(FILEFINDBUF3);
+   ULONG ulFindCount = 1;
+   APIRET rc = NO_ERROR;
+   DllList *anchor;
+   UCHAR LoadError[256] = "";            /* Bereich fr Ladefehlerinformation */
+   UCHAR errmsg[500] = "";               /* Bereich fr Ladefehlerinformation */
+   HMODULE hmodDLL = NULLHANDLE;
+   CHAR LanguageName[50];
+   int num=0;
+   int num2=0;
+   int i;
+   UCHAR achDirName[256] = "";           /* Buffer for name of directory */
+   ULONG cbDirPathLen = 0;               /* size of buffer for directory name */
+   ULONG DriveNum = 0;
+   ULONG DriveMap = 0;
+
+   /* alle Mastermind-Sprach-DLLs finden und in Liste speichern */
+   rc = DosFindFirst("mmind*.dll",
+                     &hdirFileHandle,
+                     FILE_NORMAL,
+                     &FindBuffer,
+                     ulResultBufLen,
+                     &ulFindCount,
+                     FIL_STANDARD);
+   if(rc != NO_ERROR)
+      return FALSE;
+
+   dllList = malloc(sizeof(DllList));
+   anchor = dllList;
+   cbDirPathLen = (ULONG) sizeof(achDirName);
+   DosQueryCurrentDir(0, achDirName, &cbDirPathLen);
+   DosQueryCurrentDisk(&DriveNum, &DriveMap);
+   sprintf(dllList->Filename, "%c:\\", 'A' + DriveNum - 1);
+   strcat(dllList->Filename, achDirName);
+   strcat(dllList->Filename, "\\");
+   strcat(dllList->Filename, FindBuffer.achName);
+   error(dllList->Filename, FALSE);
+   dllList->Next = NULL;
+   dllList->Prev = NULL;
+   /* Anzahl mitz„hlen */
+   num++;
+
+   while (rc != ERROR_NO_MORE_FILES) {
+      ulFindCount = 1;
+      rc = DosFindNext(hdirFileHandle,
+                       &FindBuffer,
+                       ulResultBufLen,
+                       &ulFindCount);
+      if (rc == ERROR_NO_MORE_FILES)
+         break;
+      if (rc != NO_ERROR) {
+         error("Could not read language file(s). Program will stop.", TRUE);
+         }
+      else {
+         dllList->Next = malloc(sizeof(DllList));
+         dllList->Next->Prev = dllList;
+         dllList = dllList->Next;
+         DosQueryCurrentDir(0, achDirName, &cbDirPathLen);
+         sprintf(dllList->Filename, "%c:\\", 'A' + DriveNum - 1);
+         strcat(dllList->Filename, achDirName);
+         strcat(dllList->Filename, "\\");
+         strcat(dllList->Filename, FindBuffer.achName);
+         error(dllList->Filename, FALSE);
+         dllList->Next = NULL;
+         /* Anzahl mitz„hlen */
+         num++;
+         }
+      }
+   rc = DosFindClose(hdirFileHandle);
+
+
+   /* DEBUG */
+   sprintf(errmsg, "Found %i file(s) matching mmind*.dll.", num);
+   error(errmsg, FALSE);
+   /* END DEBUG */
+
+
+   /* Namen der Sprachen lesen und zu Liste hinzufgen */
+   dllList = anchor;
+   while(dllList != NULL) {
+      /* DEBUG */
+      num2++;
+      sprintf(errmsg, "Now trying to load number %i: %s", num2, dllList->Filename);
+      error(errmsg, FALSE);
+      /* END DEBUG */
+      rc = DosLoadModule(LoadError,
+                    sizeof(LoadError),
+                    dllList->Filename,
+                    &hmodDLL);
+      /* DEBUG */
+      sprintf(errmsg, "Returncode is %i", rc);
+      if (rc == 0) {
+         strcat(errmsg, ". This means NO ERROR!");
+         }
+      error(errmsg, FALSE);
+      if (rc != NO_ERROR) {
+         sprintf(errmsg, "OS/2 said: %s", LoadError);
+         error(errmsg, FALSE);
+         }
+      /* END DEBUG */
+
+      if (!WinLoadString(hab, hmodDLL, IDS_LANGUAGE, sizeof(LanguageName), LanguageName)) {
+         sprintf(errmsg, "The file %s seems to be broken. It does not contain information about the language stored in it. Please replace it with a file obtained from the Mastermind/2 homepage (http://www.geocities.com/SiliconValley/Port/4718/).\n\nThe program will end.\n\n", dllList->Filename);
+         error(errmsg, TRUE);
+         }
+      strcpy(dllList->Language, LanguageName);
+      /* DEBUG */
+      sprintf(errmsg, "%s loaded successfully. It contains the language %s", dllList->Filename, dllList->Language);
+      error(errmsg, FALSE);
+      /* END DEBUG */
+      dllList = dllList->Next;
+      DosFreeModule(hmodDLL);
+      }
+
+   dllList = anchor;
+   return TRUE;
+}
+

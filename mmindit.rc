@@ -1,0 +1,197 @@
+/**********************************************/
+/* This is the language-dependent file for    */
+/* Mastermind/2. Please translate everything  */
+/* that's necessary into your language.       */
+/* For some texts I have added an additional  */
+/* annotation, explanation etc. If you are    */
+/* unsure about something please take either  */
+/* a look at this file in another language or */
+/* contact the author.                        */
+/* Please try always to make your translated  */
+/* text about the same length as the original.*/
+/* This will prevent the text from reaching   */
+/* out of his boundaries.                     */
+/*                                            */
+/* TIP: If you edit this file with OS/2's     */
+/*      enhanced editor epm you can turn on   */
+/*      keyword-highlighting. This will give  */
+/*      better results for viewing.           */
+/*                                            */
+/* RenÇ Auberger (r.auberger@gmx.net)         */
+/* 20 Feb 1999                                */
+/**********************************************/
+
+#include <os2.h>
+#include "defines.h"
+
+/**********************************************/
+/* The menu for the game. The tilde ~         */
+/* indicates which character will be          */
+/* underlined in the menu and can be pressed  */
+/* on the keyboard for quick access. Set it   */
+/* in front of the appropriate characters in  */
+/* your language.                             */
+/**********************************************/
+MENU ID_MAIN
+BEGIN
+   SUBMENU "~Mastermind", IDM_MASTERMIND                 /* should not be changed */
+   BEGIN
+      MENUITEM "~Nuova partita", IDM_START              /* translate the following */
+      MENUITEM "~Sospendi\tPausa", IDM_PAUSE, 0, 0x4000   /* \t means "leave some space", then follows the name of the key that correspondes to this menu item (please do not change) */
+      MENUITEM "~Arresa\tEsc", IDM_CANCEL, 0, 0x4000   /* \t means "leave some space", then follows the name of the key that correspondes to this menu item (please do not change) */
+      MENUITEM "", IDM_SEPARATOR1, 0x4
+      MENUITEM "Albo d'~oro...", IDM_HIGHSCORE
+      MENUITEM "", IDM_SEPARATOR2, 0x4
+      MENUITEM "~Colori ripetuti", IDM_MULTIPLE, 0, 0x2000
+      SUBMENU  "~Lingua", IDM_LANGUAGE
+      BEGIN
+      END
+      MENUITEM "~Imposta i colori...", IDM_PINSELECTION
+      MENUITEM "", IDM_SEPARATOR3, 0x4
+      MENUITEM "~Esci da Mastermind\tAlt+F4", IDM_EXIT         /* \t means "leave some space", then follows the name of the key that correspondes to this menu item (please do not change) */
+   END
+   SUBMENU "~Guida", IDM_HELP
+   BEGIN
+      MENUITEM "~Generica...\tF1", IDM_GENERALHELP
+      MENUITEM "~Regole...", IDM_RULES
+      MENUITEM "~Come si gioca...", IDM_HOWTOPLAY
+      MENUITEM "~Licenza...", IDM_LICENSE
+      MENUITEM "", IDM_SEPARATOR4, 0x4
+      MENUITEM "~Informazioni su...", IDM_ABOUT
+   END
+END
+
+/**********************************************/
+/* This will be the about-dialog shown at     */
+/* start and after selecting Help/about.      */
+/* Please try to keep the translated texts at */
+/* about the same length as the original ones.*/
+/**********************************************/
+DLGTEMPLATE DLG_ABOUT LOADONCALL MOVEABLE DISCARDABLE
+BEGIN
+    DIALOG  "Informazioni su Mastermind/2", DLG_ABOUT, 0, 0, 0, 0, WS_VISIBLE | FS_SCREENALIGN
+    BEGIN
+        CONTROL         IDB_LOGO, IDB_LOGO, 2, 67, 18, 20, WC_STATIC,
+                        SS_BITMAP | WS_GROUP | WS_VISIBLE
+	CTEXT           "Questo programma ä 'postcardware'. Dopo aver contattato" , IDT_ABOUT1, 4, 55, 168, 8
+        CTEXT           "r.auberger@gmx.net si puï copiare liberamente. Spedisci" , IDT_ABOUT2, 4, 48, 168, 8
+        CTEXT           "una cartolina illustrata per la registrazione gratuita a:" , IDT_ABOUT3, 4, 41, 168, 8
+	CTEXT           "RenÇ Auberger, Breitensteiner Str. 11" , IDT_ABOUT4, 4, 31, 168, 8
+        CTEXT           "D-71032 Bîblingen, Germany" , IDT_ABOUT5, 4, 24, 168, 8
+    END
+END
+
+/**********************************************/
+/* The highscore-dialog. Only the title is    */
+/* needed, the rest is specified down below.  */
+/**********************************************/
+DLGTEMPLATE DLG_HIGHSCORE LOADONCALL MOVEABLE DISCARDABLE
+BEGIN
+    DIALOG  "Aldo d'oro di Mastermind/2", DLG_HIGHSCORE, 0, 0, 0, 0, WS_VISIBLE | FS_SCREENALIGN, FCF_TITLEBAR
+    BEGIN
+    END
+END
+
+DLGTEMPLATE DLG_QUERYNAME LOADONCALL MOVEABLE DISCARDABLE
+BEGIN
+    DIALOG  "Aldo d'oro di Mastermind/2", DLG_QUERYNAME, 0, 0, 0, 0, WS_VISIBLE | FS_SCREENALIGN, FCF_TITLEBAR
+    BEGIN
+         CTEXT           "Complimenti!!!", IDT_QNT1, 5, 65, 205, 8
+         CTEXT           "", IDT_QNT2, 5, 50, 205, 8                    /* These two text's will be set during the runtime. But */
+         CTEXT           "", IDT_QNT3, 5, 42, 205, 8                    /* they will be read from a little bit further down. */
+         LTEXT           "Nome:", IDT_QNT4, 35, 26, 40, 8          /* The length of this one shouldn't change too much. */
+         ENTRYFIELD      "", IDE_QN, 76, 28, 91, 8, ES_LEFT | ES_MARGIN
+    END
+END
+
+
+DLGTEMPLATE DLG_PINSELECTION LOADONCALL MOVEABLE DISCARDABLE
+BEGIN
+   DIALOG  "Scelta dei colori di Mastermind/2", DLG_PINSELECTION, 0, 0, 0, 0, WS_VISIBLE | FS_SCREENALIGN, FCF_TITLEBAR
+   BEGIN
+      CTEXT              "Scegli i sei colori che vuoi usare:", IDT_SELECTPIN1, 3, 114, 139, 8
+   END
+END
+
+
+/**********************************************/
+/* Ok, now the the final but biggest part of  */
+/* your work. And please remember: try to     */
+/* keep it at about the same length.          */
+/**********************************************/
+STRINGTABLE
+BEGIN
+   IDS_LANGUAGE                          "Italiano"            /* please enter the name of the language, e.g. English, Deutsch, ... */
+   IDS_STARTNEWGAME                      "~Nuova partita"
+   IDS_TIMERERROR                        "Il programma non ä in grado di inizializzare il timer e sarÖ fermato. Prova a riavviarlo. Se il problema persiste si prega di contattare l'autore."
+   IDS_NOTSTARTED                        "Partita non iniziata"
+   IDS_GUESS                             "Indovina i colori:"
+   IDS_AVAILABLE                         "Colori disponibili:"
+   IDS_DROPHERE                          "Trascina qui i colori:"
+   IDS_RIGHTCOLOR                        "colore giusto e"
+   IDS_WRONGPLACE                        "posto sbagliato"
+   IDS_RIGHTPLACE                        "posto giusto"
+   IDS_GAMEPAUSED                        "Partita sospesa"
+   IDS_EXIT                              "Esci da Mastermind/2"       /* Title for dialog                           */
+   IDS_REALLYQUIT                        "Sei sicuro di voler uscire? ti arrenderesti!"
+   IDS_FIRSTTRY                          "prima prova"
+   IDS_SECONDTRY                         "seconda prova"
+   IDS_THIRDTRY                          "terza prova"
+   IDS_FOURTHTRY                         "quarta prova"
+   IDS_FIFTHTRY                          "quinta prova"
+   IDS_SIXTHTRY                          "sesta prova"
+   IDS_SEVENTHTRY                        "settima prova"
+   IDS_EIGHTTHTRY                        "ottava prova"
+   IDS_NINETHTRY                         "ancora due tentativi"
+   IDS_TENTHTRY                          "oops, ultima prova..."
+   IDS_START                             "Inizia nuova partita"         /* Title for dialog                           */
+   IDS_REALLYSTART                       "Vuoi veramente iniziare una nuova partita? Questo provocherebbe la tua resa nella partita in corso!"
+   IDS_CANCEL                            "Dichiarazione di resa"            /* Title for dialog                           */
+   IDS_REALLYCANCEL                      "Vuoi davvero arrenderti?? Se ti arrendi non puoi entrare nell'albo d'oro, Per sospendere una partita seleziona 'No' e quindi 'Sospendi': potrai riprenderla in seguito."
+   IDS_PAUSE                             "~Sospendi\tPausa"            /* Text for changing menu-item. Should be same as above in the menu-definition */
+   IDS_UNPAUSE                           "~Riprendi\tPausa"          /* Text for changing menu-item.               */
+   IDS_NOHIGHSCORE                       "L' albo d'oro non ä cosç grosso!"
+   IDS_OHNO                              "Oh no, non ci sei riuscito. Ci hai messo"   /* These three will are used for the          */
+   IDS_MINUTESANDLOOSE                   "minuti e"                                   /* sentence if you loose. Minutes             */
+   IDS_SECONDSTOWASTE                    "secondi per sprecare 10 prove..."           /* and seconds are filled in from the program */
+   IDS_DAMN                              "Accidenti!"     /* Title for messagebox if you loose */
+   IDS_TIME                              "Tempo:"
+   IDS_YOUNEEDED                         "Hai impiegato"            /* If you win and can enter your     */
+   IDS_TRIES                             "prove ("                  /* name into the highscores this     */
+   IDS_MINUTESANDWIN                     "minuti e"                 /* text will be displayed and        */
+   IDS_SECONDS                           "secondi),"                /* the program fills in the minutes, */
+   IDS_THATSRANK                         "sei classificato"         /* seconds and the rank              */
+   IDS_OFTHEHIGHSCORES                   "¯ nell'albo d'oro!"       /* in the highscores.                */
+   IDS_YOUONLYNEEDED                     "Hai impiegato solo 1 prova ("                                 /* If you need only one         */
+   IDS_MINUTESANDONE                     "minuti e"                                                     /* try this message is diplayed */
+   IDS_SECONDSONE                        "secondi), trasferisciti al"                                   /* and minutes and seconds are  */
+   IDS_CASINO                            "casinï e non sciupare la tua fortuna con mastermind ;-). Sei" /* filled in                    */
+   IDS_AFTERRANK                         "¯!"                                                           /* End of the sentence. Maybe some languages need it for words, e.g. "Blah blurb. That's rank 3!" in german "Blah blub. Das ist der 3. Rang!" so you would change it into ". Rang!" */
+   IDS_OPENERROR                         "Non sono in grado di aprire l'albo d'oro per scriverci.\n\nRiprovo?"
+   IDS_ERRORTITLE                        "Mastermind/2: errore"        /* Title for dialog                           */
+   IDS_HELPTITLE                         "Guida di Mastermind/2"         /* Title for help-window                      */
+   IDS_HELPERROR                         "Non riesco a creare la guida."
+   IDS_HELPERROR2                        "Non riesco ad associare la guida alla finestra."
+   IDS_WRITEINIERROR                     "Non sono in grado di scrivere le impostazioni su disco (mmind.ini).\n\nRiprovo?"
+   IDS_OKBUTTON                          "OK"                    /* Text for Pushbuttons */
+   IDS_CANCELBUTTON                      "Annulla"               /* Text for Pushbuttons */
+   IDS_HIGHSCORENAME                     "Nome"               /* Title for column in highscore */
+   IDS_HIGHSCORETIME                     "Tempo"              /* Title for column in highscore */
+   IDS_HIGHSCORERANK                     "Pos."               /* Title for column in highscore */
+   IDS_HIGHSCORETRIES                    "Prove"              /* Title for column in highscore */
+END
+/**********************************************/
+/* You've reached the finish. Thanks for your */
+/* work.                                      */
+/**********************************************/
+
+ICON    ID_MAIN     MMIND.ICO
+BITMAP  IDB_LOGO    logo.bmp
+
+ACCELTABLE ID_MAIN PRELOAD
+{
+   VK_PAUSE, IDM_PAUSE,                  AF_VIRTUALKEY
+   VK_ESC, IDM_CANCEL,                   AF_VIRTUALKEY
+}
+
+

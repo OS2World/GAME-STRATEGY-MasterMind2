@@ -1,0 +1,50 @@
+
+.SUFFIXES: .c .obj .rc .res
+
+.all: f:\projekte\mastermind\global.dll
+
+.rc.res:
+    @echo " Compile::ResourceCompiler "
+    rc -r %s %|dpfF.res
+
+c.obj:
+    @echo " Compile::C++ Compiler "
+    icc.exe /C+ %s
+
+f:\projekte\mastermind\global.obj: \
+    f:\projekte\mastermind\global.c \
+    makeglobal
+
+f:\projekte\mastermind\global.dll: \
+    f:\projekte\mastermind\global.obj \
+    makeglobal \
+    f:\projekte\mastermind\global.res \
+    f:\projekte\mastermind\global.def
+    ilink.exe @<<
+    /DLL /packd /e:2
+    global.obj
+    global.def
+<<
+    rc.exe f:\projekte\mastermind\global.res f:\projekte\mastermind\global.dll
+
+f:\projekte\mastermind\hglobal.res: \
+    f:\projekte\mastermind\global.rc \
+    makeglobal \
+    f:\projekte\mastermind\defines.h \
+    rosa.ptr \
+    tuerkies.ptr \
+    gruen.ptr \
+    gelb.ptr \
+    rot.ptr \
+    blau.ptr \
+    MMIND.ICO \
+    logo.bmp \
+    rot.bmp \
+    blau.bmp \
+    gelb.bmp \
+    gruen.bmp \
+    rosa.bmp \
+    tuerkies.bmp \
+    whitepin.bmp \
+    blackpin.bmp
+

@@ -1,0 +1,37 @@
+                          Upload Information Template for Hobbes.nmsu.edu
+                          ===============================================
+
+        Archive Filename: mmind14.zip
+       Short Description: Mastermind for OS/2 Warp or higher, v1.4, uses drag'n'drop, fully helpenabled, supports multiple languages
+        Long Description: The goal of mastermind is to guess the colors of your opponent (the computer).
+                          After each of your tries you get hints in the form of black and white pins
+                          which tell you how many of your guessed colors were absolutely right or right
+                          but you put them on the wrong place. In this game you use drag'n'drop to select
+                          the colors. There is a highscore and extensive help (even for each menuitem).
+                          Since v1.4 it supports multiple languages: please visit the homepage (see below) for more
+                          information and available language modules. This zip-file already includes the english language module.
+                          It's a classical logic game that is very popular in germany (don't know how
+                          popular it is in the rest of the world). This game may be freely distributed, it's
+                          postcardware, no registration charges. Source code is available at the homepage.
+
+      Proposed directory
+           for placement: /pub/os2/games/strategy
+
+               Your name: Ren‚ Auberger
+           Email address: r.auberger@gmx.net
+    Program contact name: (same)
+   Program contact email: (same)
+             Program URL: http://www.geocities.com/SiliconValley/Port/4718/
+
+      Would you like the
+   contact email address
+    included in listings? yes
+
+Operating System/Version: OS/2 Warp 3, Warp 4 or higher
+ Additional requirements: 
+
+                Replaces: mmind13w.zip
+
+
+
+

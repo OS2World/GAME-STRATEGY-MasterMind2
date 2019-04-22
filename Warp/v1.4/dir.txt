@@ -1,0 +1,21 @@
+
+ Datentr„ger, Laufwerk F, hat den Namen OS2 PROGRAM.
+ Datentr„gernummer ist 26CC:6014
+ Verzeichnis von F:\rene\MasterMind
+
+31.03.99  20.49      <DIR>           0  .
+31.03.99  20.49      <DIR>           0  ..
+13.03.99  11.47      15955           0  global.dll
+28.03.99  18.02       3588           0  history.txt
+24.03.99  20.54       2643        3935  install.cmd
+29.03.99  23.06      52736          61  mmind.exe
+11.01.99  22.07       4236           0  mmind.ico
+31.03.99  20.53         40           0  mmind.ini
+30.03.99  21.39      50875           0  mmind14.zip
+21.03.99  16.52      63046           0  mminden.dll
+23.03.99  21.00     100363           0  mminden.HLP
+24.03.99  21.14         41           0  mminden.nlv
+24.03.99  21.14     133923           0  mmnd14en.zip
+30.03.99  21.39       5131           0  readme
+        14 Datei(en)     432577 Byte belegt
+                    345885696 Byte frei

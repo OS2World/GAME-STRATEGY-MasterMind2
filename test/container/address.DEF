@@ -1,0 +1,13 @@
+NAME           ADDRESS      WINDOWAPI
+
+NEWFILES
+
+DESCRIPTION    'Taken from: Container sample program Copyright(R) Code Blazers, Inc. 1992'
+PROTMODE
+HEAPSIZE       16384
+STACKSIZE      32768
+
+EXPORTS   DialogFonts
+             DialogModem
+
+

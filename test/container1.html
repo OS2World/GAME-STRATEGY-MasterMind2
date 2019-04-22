@@ -1,0 +1,378 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<LINK REV=MADE HREF="mailto:editor@edm2.com">
+<TITLE>EDM/2 - Programming the Container Control - Part 1/3</TITLE>
+</HEAD>
+
+<BODY TEXT="#000000" LINK="#CC0000" VLINK="#993333" BGCOLOR="#FFFBFB"
+  BACKGROUND="../common/images/bg.gif">
+
+<!-- ====================================================== -->
+<!--                           Map                          -->
+<!-- ====================================================== -->
+<MAP NAME="Linkbar">
+<AREA ALT="Feedback" COORDS="190,1,260,14"
+   HREF="mailto:feedback@edm2.com">
+<AREA ALT="Search" COORDS="280,1,335,14"
+   HREF="../common/search.html">
+<AREA ALT="Top" COORDS="355,1,390,14"
+   HREF="../index.html">
+<AREA ALT="Backward" COORDS="400,1,475,14"
+   HREF="os2ifs1.html">
+
+
+</MAP>
+
+<TABLE WIDTH="100%">
+<TR>
+<TD VALIGN=TOP WIDTH="15%">
+<IMG BORDER=0 WIDTH=56 HEIGHT=18 ALT="EDM/2"
+  HSPACE=10 SRC="../common/images/edm2sm.gif">
+</TD>
+<TD WIDTH="85%">
+
+<H2>Programming the Container Control - Part 1/3</H2>
+
+<P>Written by <A HREF="../common/authors/lsalomon.html">Larry Salomon, Jr.</A>
+
+</TD>
+</TR>
+</TABLE>
+
+<!-- ====================================================== -->
+<!--                         Linkbar                        -->
+<!-- ====================================================== -->
+<P><IMG BORDER=0 WIDTH=560 HEIGHT=14 ALT="" USEMAP="#Linkbar"
+   SRC="../common/images/lastarticlebar.gif">
+
+<P><TABLE WIDTH="100%">
+<TR>
+<TD WIDTH="10%">&nbsp;</TD>
+<TD WIDTH="80%">
+
+<TABLE BORDER=0 CELLSPACING=0 CELLPADDING=4 WIDTH="400">
+<TR>
+   <TD ALIGN=CENTER VALIGN=MIDDLE>
+      <SMALL>Part1</SMALL></TD>
+   <TD ALIGN=CENTER VALIGN=MIDDLE>
+      <A HREF="../0104/container2.html"><SMALL>Part2</SMALL></A></TD>
+   <TD ALIGN=CENTER VALIGN=MIDDLE>
+      <A HREF="../0105/container3.html"><SMALL>Part3</SMALL></A></TD>
+</TR>
+</TABLE>
+
+<H2>Introduction</H2>
+
+<P>The release of OS/2 2.0 was special in many ways; not the least was the
+inclusion of four new standard PM controls:  the container, the notebook,
+the slider, and the value set.  Without question, the most difficult of
+these to utilize fully is the container control.  Its flexible design
+allowed for it to be used in a variety of fashions (which is no surprise
+when you look at its real-world counterpart) and provided a CUA 91
+compliant interface without much additional work by the programmer.
+Unfortunately, the initial work that has to be done is significant and has
+daunted many developers.
+
+<P>This article begins a multi-part series on how to program the container and
+will describe the container control from a developer's perspective as well
+as introduce some of the basic programming concepts that can be used in you
+applications.  For additional information, it is highly recommended that
+you acquire a copy of the Winter and Spring 1993 issues of the OS/2
+Developer magazine (produced by IBM Corp. and published by Miller Freeman
+Inc.).  These two issues contain a single article each by the container
+control developers on how to use it and are both very informative.
+
+<P><H2>A Bird's-Eye View</H2>
+
+<P>In "real-life" a container is something that you see everyday. Most people
+store foodstuffs in Tupperware containers.  On many office desks, pens and
+pencils are stored in containers.  In a filing cabinet, documents are
+stored in another container, although it is more widely known as a folder.
+Everywhere you look, there are containers being used; because of this, the
+CUA designers decided that the ability to store objects in a container was
+a very good thing; not only was it a familiar concept, but it was also
+already being used on another computer platform (the MacIntosh) with
+extremely good results.
+
+<P>The container is exactly what you think it is.  It allows an application to
+place "things" inside of it and these things can be viewed in one of five
+different ways.  The term "thing" is used because the container does not
+restrict the application in the type of items stored.  The five different
+views supported by the container are listed below:
+
+<P><TABLE BORDER CELLPADDING=5>
+<TR><TD><B>View</B></TD> <TD><B>Description</B></TD> </TR>
+<TR> <TD>Icon</TD>
+     <TD>Each object is represented as an icon with a descriptive string
+         below it.</TD>
+</TR>
+<TR> <TD>Name</TD>
+     <TD>Each object is represented as an icon with a descriptive string to
+         the right.</TD>
+</TR>
+<TR> <TD>Text</TD>
+     <TD>Each object is represented solely as a descriptive string.</TD>
+</TR>
+<TR> <TD>Tree</TD>
+     <TD>Each object is represented as a hierarchical diagram of icons and/or
+         descriptive strings.</TD>
+</TR>
+<TR> <TD>Detail</TD>
+     <TD>Each object is represented as a detailed description of the
+         object. The information displayed is defined by the application.</TD>
+</TR>
+</TABLE>
+
+<P>This month, we will only employ the icon view for simplicity.  The other
+views will be covered in subsequent months.
+
+<P>Each object is described to the container using a base data type - this can
+be either the RECORDCORE or the MINIRECORDCORE structure, depending on the
+CCS_ style used when creating the control. (For the purposes of our
+discussion, the MINIRECORDCORE structure will be referenced although either
+could be used.)  When objects are allocated, additional memory at the end
+of the MINIRECORDCORE structure can be requested, for the storage of any
+object-specific data. Thus, you would have to define a structure to contain
+both the base data and the additional fields needed:
+
+<P><PRE><SMALL>
+typedef struct _MYCNRREC {
+   MINIRECORDCORE mrcCore;
+   CHAR achText[256];
+   ULONG ulNumSold;
+   float fGrossIncome;
+   float fNetIncome;
+   float fTotalCost;
+   float fNetProfit;
+} MYCNRREC, *PMYCNRREC;
+</SMALL></PRE>
+
+<P>Since the container, when returning pointers to the object records, always
+returns a PRECORDCORE type, you will need to typecast this to your
+application-defined type (here, PMYCNRREC).
+
+<P><H2>Basic Record Operations</H2>
+
+<P><H3>Inserting and Removing Records</H3>
+
+<P>The container makes a distinction between allocation and insertion of
+records; likewise, a similar distinction is made between removing a record
+and freeing the memory consumed by the record.  Allocation is accomplished
+by sending the control a CM_ALLOCRECORD message, while insertion is done by
+sending a CM_INSERTRECORD message.
+
+<P>The CM_ALLOCRECORD requires the number of additional bytes needed in
+mpParm1 and the number of records to allocate in mpParm2.  If more than one
+record is allocated, a linked list of the records is returned (with the
+linked being the preccNextRecord field in the MINIRECORDCORE structure);
+otherwise, a pointer to the record is returned.  The container will
+initialize the entire structure to "nothing" (meaning no icon, no text,
+etc.).  It is your responsibility to "fill-in-the-blanks" so that something
+meaningful will appear in the control; for the icon view, these fields are
+the hptrIcon and pszIcon fields of the MINIRECORDCORE structure.  You
+should set them to the handle of the icon and to the pointer to the
+descriptive text to be displayed, respectively.  Using our MYCNRREC
+structure again as an example:
+
+<P><PRE><SMALL>
+ULONG ulExtra;
+PMYCNRREC pmcrRecord;
+
+ulExtra=sizeof(MYCNRREC)-sizeof(MINIRECORDCORE);
+
+pmcrRecord=(PMYCNRREC)PVOIDFROMMR
+                   (WinSendMsg(hwndCnr,
+                               CM_ALLOCRECORD,
+                               MPFROMLONG(ulExtra),
+                               MPFROMSHORT(1)));
+if (pmcrRecord!=NULL) {
+   pmcrRecord->mrcCore.hptrIcon=
+      WinLoadPointer(HWND_DESKTOP,
+                     NULLHANDLE,
+                     HPTR_PRODUCT);
+   pmcrRecord->mcrCore.pszIcon=pmcrRecord->achText;
+   strcpy(pmcrRecord->achText,"Thing-A-Ma-Jig");
+} /* endif */
+</SMALL></PRE>
+
+<P>Once you have allocated, initialized, and are ready to insert your records,
+you need to describe the placement of the records to the container (via the
+RECORDINSERT structure) to the container.  An item of interest is that the
+container has two notions of order:  z-order and item-order. The former
+should be familiar because PM windows all have this concept.  The latter,
+however, is useful when you wish to enumerate the records in an order other
+than the z-order placement without affecting the appearance of the records
+in the container.  Continuing our example above:
+
+<P><PRE><SMALL>
+RECORDINSERT riInsert;
+
+riInsert.cb=sizeof(RECORDINSERT);
+riInsert.pRecordOrder=CMA_FIRST;
+   /* Insert at the head of the list */
+riInsert.pRecordParent=NULL;
+   /* No parent record */
+riInsert.fInvalidateRecord=TRUE;
+   /* Automatic invalidation of records */
+riInsert.zOrder=CMA_TOP;
+   /* Place on top of siblings */
+riInsert.cRecordsInsert=1;
+
+WinSendMsg(hwndCnr,
+           CM_INSERTRECORD,
+           MPFROMP(pmcrRecord),
+           MPFROMP(&amp;riInsert));
+</SMALL></PRE>
+
+<P>A couple of important things should be noted here:
+
+<P><UL>
+<LI>It is very inefficient to allocate and insert records one at a time.  If
+at all possible, allocate many records and insert them all at once.
+
+<P><LI>You can specify FALSE for the fInvalidateRecord field to cause the
+container not to invalidate the records once they are inserted.  Doing this
+allows you to reflow - or arrange - the records in the container before
+displaying them ( using the CM_ARRANGE) message.  If you choose to do this,
+you must send a CM_INVALIDATERECORD message specifying CMA_REPOSITION and
+CMA_ERASE to redraw the container.
+</UL>
+
+<P>To remove a record from the list, you use the CM_REMOVERECORD message.  If
+you choose not to have the container free the memory (using the CMA_FREE
+flag), you must also send a CM_FREERECORD message to return the memory to
+the system.  A "gotcha" here is that the first parameter of the two
+messages is a pointer to an array of pointers. Thus, if you are only
+removing one record, you need to specify a pointer to the record pointer:
+
+<P><PRE><SMALL>
+PMYCNRREC pmcrRecord;
+
+/* Query the first record in the container */
+pmcrRecord=(PMYCNRREC)PVOIDFROMMR(
+                WinSendMsg(hwndCnr,
+                           CM_QUERYRECORD,
+                           MPFROMP(NULL),
+                           MPFROM2SHORT(CMA_FIRST,
+                           CMA_ITEMORDER)));
+
+/* Remove it and free the memory */
+WinSendMsg(hwndCnr,
+           CM_REMOVERECORD,
+           MPFROMP(&amp;pmcrRecord),
+           MPFROMSHORT(CMA_FREE));
+
+/* We now need to invalidate the container */
+WinSendMsg(hwndCnr,
+           CM_INVALIDATERECORD,
+           MPFROMP(NULL),
+           MPFROM2SHORT(0,CMA_REPOSITION|
+                        CMA_ERASE));
+</SMALL></PRE>
+
+<P><H3>Arranging the Records</H3>
+
+<P>Arranging the records is as simple as sending a CM_ARRANGE message.  This
+message takes no parameters. the record pointer:
+
+<P><PRE><SMALL>
+WinSendMsg(hwndCnr,
+           CM_ARRANGE,
+           0,
+           0);
+</SMALL></PRE>
+
+<P><H2>Using the CM_SETCNRINFO Message</H2>
+
+<P>To change the value any of a multitude of attributes belonging to the
+container, you can use the CM_SETCNRINFO message.  This controls everything
+about the container including the current view type, which is probably its
+most widely used feature.  The way this message works is that you define a
+variable of type CNRINFO, set the appropriate fields, and send the message.
+In the second parameter, you specify one or more flags which tells the
+container which fields to examine.  Thus, you do not have to initialize the
+entire structure for one field. the record pointer:
+
+<P><PRE><SMALL>
+CNRINFO ciInfo;
+
+/* Change the view to icon view */
+ciInfo.flWindowAttr=CV_ICON;
+
+WinSendMsg(hwndCnr,
+           CM_SETCNRINFO,
+           MPFROMP(&amp;ciInfo),
+           MPFROMLONG(CMA_FLWINDOWATTR));
+</SMALL></PRE>
+
+<P>This provides a very limited example of the CM_SETCNRINFO message.  For
+more information about the CNRINFO structure see the Technical Reference,
+available with the Programming Toolkit.
+
+<P><H2>Basic Notifications</H2>
+
+<P>The container will notify its owner via the WM_CONTROL message whenever any
+of a multitude of events occur.  Five of the more basic notifications are
+listed:
+
+<P><TABLE BORDER CELLPADDING=5>
+<TR> <TD><B>Code</B></TD> <TD><B>Meaning</B></TD> </TR>
+<TR> <TD>CN_ENTER</TD>
+     <TD>The user pressed ENTER or double clicked the mouse while the
+         container had the focus.</TD>
+</TR>
+<TR> <TD>CN_HELP</TD>
+     <TD>The user pressed F1 while the container had the focus.</TD>
+</TR>
+<TR> <TD>CN_CONTEXTMENU</TD>
+     <TD>The user pressed the context menu key combination as
+         defined on the System settings.  The default for the system is
+         Ctrl+F10.</TD>
+</TR>
+<TR> <TD>CN_SETFOCUS</TD>
+     <TD>The container has received the focus.</TD>
+</TR>
+<TR> <TD>CN_KILLFOCUS</TD>
+     <TD>The container is losing the focus.</TD>
+</TR>
+</TABLE>
+
+<P>Next month we'll briefly describe a few others and their meanings.
+
+<P><H2>Next Month</H2>
+
+<P>Next month, we will look at the tree view as well as look at a few other
+notifications.  Also, we will build our first sample application using the
+concepts described here and in next month's article.
+
+<P><H2>Example Container Object Record</H2>
+
+<P>Used as the object record type throughout this article, the definition is
+below:
+
+<P><PRE><SMALL>
+typedef struct _MYCNRREC {
+   MINIRECORDCORE mrcCore;
+   CHAR achText[256];
+   ULONG ulNumSold;
+   float fGrossIncome;
+   float fNetIncome;
+   float fTotalCost;
+   float fNetProfit;
+} MYCNRREC, *PMYCNRREC;
+</SMALL></PRE>
+
+</TD>
+<TD WIDTH="10%">&nbsp;</TD>
+</TR>
+</TABLE>
+
+<!-- ====================================================== -->
+<!--                         Linkbar                        -->
+<!-- ====================================================== -->
+<P><IMG BORDER=0 WIDTH=560 HEIGHT=14 ALT="" USEMAP="#Linkbar"
+   SRC="../common/images/lastarticlebar.gif">
+
+</BODY>
+</HTML>

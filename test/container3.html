@@ -1,0 +1,494 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<LINK REV=MADE HREF="mailto:editor@edm2.com">
+<TITLE>EDM/2 - Programming the Container Control - Part 3/3</TITLE>
+</HEAD>
+
+<BODY TEXT="#000000" LINK="#CC0000" VLINK="#993333" BGCOLOR="#FFFBFB"
+  BACKGROUND="../common/images/bg.gif">
+
+<!-- ====================================================== -->
+<!--                           Map                          -->
+<!-- ====================================================== -->
+<MAP NAME="Linkbar">
+<AREA ALT="Feedback" COORDS="190,1,260,14"
+   HREF="mailto:feedback@edm2.com">
+<AREA ALT="Search" COORDS="280,1,335,14"
+   HREF="../common/search.html">
+<AREA ALT="Top" COORDS="355,1,390,14"
+   HREF="../index.html">
+<AREA ALT="Backward" COORDS="400,1,475,14"
+   HREF="os2ifs2.html">
+<AREA ALT="Forward" COORDS="490,1,550,14"
+   HREF="helpmandoc.html">
+</MAP>
+
+<TABLE WIDTH="100%">
+<TR>
+<TD VALIGN=TOP WIDTH="15%">
+<IMG BORDER=0 WIDTH=56 HEIGHT=18 ALT="EDM/2"
+  HSPACE=10 SRC="../common/images/edm2sm.gif">
+</TD>
+<TD WIDTH="85%">
+
+<H2>Programming the Container Control - Part 3/3</H2>
+
+<P>Written by <A HREF="../common/authors/lsalomon.html">Larry Salomon, Jr.</A>
+
+</TD>
+</TR>
+</TABLE>
+
+<!-- ====================================================== -->
+<!--                         Linkbar                        -->
+<!-- ====================================================== -->
+<P><IMG BORDER=0 WIDTH=560 HEIGHT=14 ALT="" USEMAP="#Linkbar"
+   SRC="../common/images/articlebar.gif">
+
+<P><TABLE WIDTH="100%">
+<TR>
+<TD WIDTH="10%">&nbsp;</TD>
+<TD WIDTH="80%">
+
+<TABLE BORDER=0 CELLSPACING=0 CELLPADDING=4 WIDTH="400">
+<TR>
+   <TD ALIGN=CENTER VALIGN=MIDDLE>
+      <A HREF="../0103/container1.html"><SMALL>Part1</SMALL></A></TD>
+   <TD ALIGN=CENTER VALIGN=MIDDLE>
+      <A HREF="../0104/container2.html"><SMALL>Part2</SMALL></A></TD>
+   <TD ALIGN=CENTER VALIGN=MIDDLE>
+      <SMALL>Part3</SMALL></TD>
+</TR>
+</TABLE>
+
+<H2>Back at the Batcave</H2>
+
+<P>Last month we continued our disection of the container control and how to
+use it.  The tree view was added to our list of conquests, and we started
+developing a sample application which we will continue to use.  This month,
+we will add more meat to the bones of our skeleton by learning about the
+detail view and direct editing, among other things.
+
+<H2>Detail View</H2>
+
+<P>Back in the first installment of this series, the detail view was described
+in the following manner.
+
+<P>Each object is represented as a detailed description of the object. The
+information displayed is defined by the application.
+
+<P>While I realize that did not say much, it served to illustrate that the
+detail view is the most flexible of the views, in terms of what can be
+displayed.  It should be logical then to assume that this means yet more
+setup on the part of the application.
+
+<H3>What is the Detail View?</H3>
+
+<P>To be precise, the detail view is a matrix view of the contents of a
+container, where each row in the matrix is a separate object and each
+column is an attribute (called a field) of every object to be displayed.
+
+<P>Since the objects are already added using the
+CM_ALLOCRECORD/CM_INSERTRECORD messages, the columns must be added; this is
+done using the CM_ALLOCDETAILFIELDINFO/CM_INSERTDETAILFIELDINFO messages.
+As with its record-oriented counterpart, the CM_ALLOCDETAILFIELDINFO
+accepts the number of fields to allocate memory for and returns a pointer
+to the first FIELDINFO structure in the linked-list.
+
+<PRE><SMALL>
+typedef struct _FIELDINFO {
+   ULONG cb;
+   ULONG flData;
+   ULONG flTitle;
+   PVOID pTitleData;
+   ULONG offStruct;
+   PVOID pUserData;
+   struct _FIELDINFO *pNextFieldInfo;
+   ULONG cxWidth;
+} FIELDINFO, *PFIELDINFO;
+</SMALL></PRE>
+
+<FONT SIZE=2>
+Figure 1: The FIELDINFO structure.
+</FONT>
+
+<DL>
+<DT>cb</DT><DD>specifies the size of the structure in bytes.</DD>
+<DT>flData</DT><DD>specifies flags (CFA_* constants) for the field, especially the
+datatype.</DD>
+<DT>flTitle</DT><DD>specifies flags (CFA_* constants) for the column title.</DD>
+<DT>pTitleData</DT><DD>points to a string used for the column heading (can be NULL).</DD>
+<DT>offStruct</DT><DD>specifies the offset of the data in the container record to be
+formatted according to its datatype.  The FIELDOFFSET macro (defined in the
+Toolkit) is very helpful in initializing this field. </DD>
+</DL>
+
+When the datatype is CFA_STRING, the field in the container record is
+expected to be a pointer to the string and not the string itself.  For
+example,
+
+<PRE><SMALL>
+typedef struct _MYCNRREC {
+   MINIRECORDCORE mrcCore;
+   CHAR achText[256];
+   ULONG ulNumSold;
+   float fGrossIncome;
+   float fNetIncome;
+   float fTotalCost;
+   float fNetProfit;
+   CHAR achProdName[256];
+   PCHAR pchProdName;
+} MYCNRREC, *PMYCNRREC;
+</SMALL></PRE>
+
+we would specify FIELDOFFSET(MYCNRREC,pchProdName) instead of
+FIELDOFFSET(MYCNRREC,achProdName).  The reason for this will be clear when
+we discuss direct editing.
+
+<DL>
+<DT>pUserData</DT><DD>points to any application-defined data for the field.</DD>
+<DT>pNextFieldInfo</DT><DD>points to the next FIELDINFO structure.  This is
+initialized by the CM_ALLOCDETAILFIELDINFO message.</DD>
+<DT>cxWidth</DT><DD>specifies the width in pixels of the field.  This is initialized
+by the CM_ALLOCDETAILFIELDINFO message to 0, indicating that the field
+should be wide enough to show the widest value.  If the default is not used
+and the data is too wide to fit, it is truncated when displayed.</DD>
+</DL>
+
+The flData field is initialized using one or more CFA_* constants:
+
+<H3>Data type</H3>
+
+<DL>
+<DT>CFA_BITMAPORICON</DT><DD>offStruct "points" to the handle of a bitmap or icon,
+depending on whether or not CA_DRAWICON or CA_DRAWBITMAP was specified in
+the flWindowAttr field in the CM_SETCNRINFO message (CA_DRAWICON is the
+default if not explicitly changed by the application).</DD>
+<DT>CFA_STRING</DT><DD>offStruct "points" to a pointer to the string to be displayed.
+Only data of this type can be directly edited.</DD>
+<DT>CFA_ULONG</DT><DD>offStruct "points" to an unsigned long integer.</DD>
+<DT>CFA_DATE</DT><DD>offStruct "points" to a CDATE structure.</DD>
+<DT>CFA_TIME</DT><DD>offStruct "points" to a CTIME structure.</DD>
+</DL>
+
+For the latter three, NLS support is provided automatically by the
+container.  You should note that there is no support for short integers,
+since they map directly to long integers with no loss in precision, nor is
+there support for floating point (none of PM uses floating point, so why
+should they start now).  The latter means that you have to also have a
+string representation of the number (and creates all kinds of headaches if
+you will allow editing of the value).
+
+<H3>Alignment</H3>
+
+<DL>
+<DT>CFA_LEFT</DT><DD>Align the data to the left</DD>
+<DT>CFA_CENTER</DT><DD>Horizontally center the data</DD>
+<DT>CFA_RIGHT</DT><DD>Align the data to the right</DD>
+<DT>CFA_TOP</DT><DD>Align the data to the top</DD>
+<DT>CFA_VCENTER</DT><DD>Vertically center the data</DD>
+<DT>CFA_BOTTOM</DT><DD>Align the data to the bottom</DD>
+</DL>
+
+<H3>Miscellaneous</H3>
+
+<DL>
+<DT>CFA_SEPARATOR</DT><DD>Displays a vertical separator to the right of the field</DD>
+<DT>CFA_HORZSEPARATOR</DT><DD>Displays a horizontal separator underneath the column heading</DD>
+<DT>CFA_OWNER</DT><DD>Enables ownerdraw for this field</DD>
+<DT>CFA_INVISIBLE</DT><DD>Prevents display of this column</DD>
+<DT>CFA_FIREADONLY</DT><DD>Prevents direct editing of the data if CFA_STRING is the datatype</DD>
+</DL>
+
+The flTitle field is initialized using one or more of the alignment fields
+and/or one or both of the following
+
+<H3>Miscellaneous</H3>
+
+<DL>
+<DT>CFA_BITMAPORICON</DT><DD>pTitleData is the handle of a bitmap or icon, depending
+on whether or not CA_DRAWICON or CA_DRAWBITMAP was specified in the
+flWindowAttr field in the CM_SETCNRINFO message (CA_DRAWICON is the default
+if not explicitly changed by the application).  If this is not specified,
+pTitleData is expected to point to character data.</DD>
+<DT>CFA_FITITLEREADONLY</DT><DD>the text of the title is not directly editable.</DD>
+</DL>
+
+<H3>What's Next?</H3>
+
+<P>Once you have initialized all of the FIELDINFO structures, you can "insert"
+them into the container using the CM_INSERTDETAILFIELDINFO message.  Again
+using the parallel of the CM_INSERTRECORD message, it expects a pointer to
+the first FIELDINFO structure as well as a pointer to a FIELDINFOINSERT
+structure.
+
+<PRE><SMALL>
+typedef struct _FIELDINFOINSERT {
+   ULONG cb;
+   PFIELDINFO pFieldInfoOrder;
+   ULONG fInvalidateFieldInfo;
+   ULONG cFieldInfoInsert;
+} FIELDINFOINSERT, *PFIELDINFOINSERT;
+</SMALL></PRE>
+
+<FONT SIZE=2>
+Figure 2: The FIELDINFOINSERT structure.
+</FONT>
+
+<DL>
+<DT>cb</DT><DD>specifies the size of the structure in bytes.</DD>
+<DT>pFieldInfoOrder</DT><DD>specifies the FIELDINFO structure to be linked after, or
+CMA_FIRST or CMA_LAST to specify that these FIELDINFO structures should go
+to the head/tail of the list, respectively.</DD>
+<DT>fInvalidateFieldInfo</DT><DD>specifies whether or not the fields are to be
+invalidated.</DD>
+<DT>cFieldInfoInsert</DT><DD>specifies the number of FIELDINFO structures being
+inserted.</DD>
+</DL>
+
+Finally, changing the view to detail view is as simple as - you guessed it
+- sending the control a CM_SETCNRINFO message.
+
+<PRE><SMALL>
+   CNRINFO ciInfo;
+
+   ciInfo.flWindowAttr=CV_DETAIL;
+   WinSendMsg(hwndCnr,
+              CM_SETCNRINFO,
+              MPFROMP(&amp;ciInfo),
+              MPFROMLONG(CMA_FLWINDOWATTR));
+</SMALL></PRE>
+
+<FONT SIZE=2>
+Figure 3: Changing to the detail view.
+</FONT>
+
+<P>Note that, even if you initialize the pTitleData field of the FIELDINFO
+structure to point to the column heading, the titles are not displayed
+unless you specify CA_DETAILSVIEWTITLES in the flWindowAttr field.
+
+<H2>Direct Editing</H2>
+
+<P>Direct editing is accomplished by pressing the proper combination of keys
+and/or mouse buttons as defined in the "Mappings"  page of the "Mouse"
+settings (in the "OS/2 System"/"System Setup" folder) while the mouse is
+over a directly-editable region.  When this is done, a multi-line edit
+control appears and is initialized with the current text, in which you can
+make your changes; the enter key acts as a newline, while the pad enter key
+completes the editing operation and (normally) applies the changes.
+
+<P>From a programming perspective, three notifications are sent to the
+application whenever direct-editing is requested by the user when over a
+non-read-only field ("field" is used here to mean any text string and not
+as it was defined in the discussion of the detail view) - CN_BEGINEDIT,
+CN_REALLOCPSZ, and CN_ENDEDIT (in that order).  For all three, mpParm2
+points to a CNREDITDATA structure which describes the state of the record
+being edited.  The purpose of CN_BEGINEDIT and CN_ENDEDIT is to notify the
+user that editing is about to begin/end.  However, only the CN_REALLOCPSZ
+is important, since the former two can be ignored while the latter cannot.
+
+<PRE><SMALL>
+typedef struct _CNREDITDATA {
+   ULONG cb;
+   HWND hwndCnr;
+   PRECORDCORE pRecord;
+   PFIELDINFO pFieldInfo;
+   PSZ *ppszText;
+   ULONG cbText;
+   ULONG id;
+} CNREDITDATA;
+</SMALL></PRE>
+
+<FONT SIZE=2>
+Figure 4: The CNREDITDATA structure.
+</FONT>
+
+<DL>
+<DT>cb</DT><DD>specifies the size of the structure in bytes.</DD>
+<DT>hwndCnr</DT><DD>specifies the handle of the container.</DD>
+<DT>pRecord</DT><DD>points to the record being edited.</DD>
+<DT>pFieldInfo</DT><DD>points to the FIELDINFO structure describing the field being
+edited.</DD>
+<DT>ppszText</DT><DD>points to the pointer to the text being edited.</DD>
+<DT>cbText</DT><DD>specifies the size of the text.</DD>
+<DT>id</DT><DD>specifies which part of the container contains the text to be edited
+and can be one of the following:
+<UL>
+<li>CID_CNRTITLEWND
+<LI>CID_LEFTDVWND
+<LI>CID_RIGHTDVWND
+<LI>CID_LEFTCOLTITLEWND
+<LI>CID_RIGHTCOLTITLEWND.
+</UL>
+</DD>
+</DL>
+
+The CN_REALLOCPSZ indicates that editing is about to end and that the
+application should allocate a new block of memory to contain the text.
+ppszText double-points to the old text and cbText specifies the length of
+the new text.  If a new memory block is allocated, the pointer to the new
+memory block must be stored in ppszText. Returning TRUE from this
+notification indicates that ppszText  points to a memory block sufficiently
+large enough to hold cbText  bytes and that the container should copy the
+new text to this buffer.  (I am not sure if cbText  includes the null
+terminator - `\0')  Returning FALSE  indicates that the changes should not
+be copied and should be discarded.
+
+<H2>Altered States</H2>
+
+<P>As defined by CUA '91 (I think), an object in general can be in one or more
+of five states (or none at all) - source, target, in-use, cursored, and
+selected.  A container record stores information on its current state in
+the flRecordAttr (in both the RECORDCORE and MINIRECORDCORE structures) in
+the form of CRA_* constants.  Setting the state, however, is not a simple
+matter of setting this field, since the container will have no way of
+knowing that you've changed the field.  Instead, you send the container a
+CM_SETRECORDEMPHASIS message which updates this field in the record and
+updates the display of that record on the screen.
+
+<P>Those who are "on the ball" will notice that there is no CRA_SOURCE
+constant defined in the 2.0 Toolkit.  This was inadvertently left out and
+should be defined to be 0x00004000L in pmstddlg.h.
+
+<P>So what do all of these states mean?
+
+<DL>
+<DT>CRA_CURSORED</DT><DD>the record has the input focus.</DD>
+<DT>CRA_INUSE</DT><DD>the record (and thus the object) is in use by the application.</DD>
+<DT>CRA_SELECTED</DT><DD>the record is selected for later manipulation.</DD>
+<DT>CRA_SOURCE</DT><DD>the record is a source for a direct-manipulation operation.</DD>
+<DT>CRA_TARGET</DT><DD>the record is a target for a direct-manipulation operation.</DD>
+</DL>
+
+When you want to query all records with a particular emphasis type, you use
+the CM_QUERYRECORDEMPHASIS message.  This returns the next record that has
+the specifies emphasis (or NULL if none exists).
+
+<H3>Popup Menus</H3>
+
+<P>If you take a close look at the Workplace Shell, you will see all of these
+states used in one way or another.  A more interesting use is in
+conjunction with popup menus; if the record underneath the mouse is not
+selected, it alone is given source emphasis.  If it is selected, all
+records that are selected are given source emphasis.  If no record is
+underneath the mouse, the container itself is given source emphasis.  After
+the appropriate record states have been changed, WinPopupMenu() is called.
+Finally, the WM_MENUEND message is intercepted to "un-source" the records
+that were changed.  Broken down into pseudo-code, this becomes:
+
+<OL>
+<LI>Determine if the mouse is over a container record
+<UL>
+<LI>If so, check the selection state
+<UL>
+<LI>If the record is selected, add source emphasis to all selected records
+<LI>If the record is not selected, give it source emphasis only
+</UL>
+<LI>If not, select the enter container
+</UL>
+<LI>Call WinPopupMenu()
+<LI>Undo source emphasis changes
+</OL>
+
+While determining if the mouse is over a record is easy when processing the
+WM_CONTROL message, it is a bit more difficult when in the WM_CONTEXTMENU
+menu.  The solution, it would appear from looking at our arsenal of
+messages that we can send to the container, would be to send the container
+a CM_QUERYRECORDFROMRECT message, specifying the mouse position as the
+rectangle to query.  Looking a bit closer at the documentation reveals that
+the rectangle has to be specified in virtual  coordinates.  What???
+
+<H3>Virtual Coordinates</H3>
+
+<P>Okay, okay, everyone has probably heard of and is vaguely familiar with
+virtual coordinates, or else you would not be in PM programming to begin
+with. The container's notion of the origin in its coordinate system is
+somewhat awry, unfortunately, and this confuses things; the origin is
+defined to be the screen coordinate of the lower left corner of the
+container at the time the last CM_ARRANGE message was sent.
+
+<P>So, you either have to keep track of when you send the container a
+CM_ARRANGE  message and perform all sorts of hocus pocus to remember where
+the origin is supposed to be, or you can finish reading this sentence and
+discover that the documentation for CM_QUERYRECORDFROMRECT is flat-out
+wrong.  The rectangle specified in this message is in window coordinates.
+Whew!  That greatly simplifies things, except that when in detail view the
+record returned is the one above the one the mouse is over.  Oh boy.
+Fortunately, we can calculate the height of a record using the
+CM_QUERYRECORDRECT message, which we use to adjust the mouse position
+before calling CM_QUERYRECORDFROMRECT.
+
+<P>Now that we have the record underneath the mouse, we can check its
+selection state by examining the flRecordAttr field.  If the record is
+selected, it is probably more efficient to use the CM_QUERYRECORDEMPHASIS
+message to get all selected records, but we already have this exquisite
+recursive search function, so I used that instead. Another example of poor
+documentation is in CM_SETRECORDEMPHASIS where it does not tell you that
+you can set the container's source emphasis by specifying NULL for the
+record.
+
+<P>Finally, we call WinPopupMenu() and undo the source emphasis and - voila! -
+we're done.
+
+<H2>CNR3 - A Sample Application Revisited</H2>
+
+<P>CNR3 builds upon CNR2 by adding detail view support, direct editing
+support, and "proper" popup menu support.  As with part II, landmarks have
+been added to CNR3.C which are to point out things of interest.  These
+landmarks are described below.
+
+<H3>Landmark 1</H3>
+
+<P>This is to point out the additions of the last four fields to the MYCNREDIT
+structure and the addition of the pmcrMenu field to the CLIENTDATA
+structure.
+
+<H3>Landmark 2</H3>
+
+<P>This points out the allocation, initialization, and insertion of the
+FIELDINFO structures.
+
+<H3>Landmark 3</H3>
+
+<P>This points out the new procedure for handling the context menu.
+
+<H3>Landmark 4</H3>
+
+<P>This points out the correction for the bug in the CM_QUERYRECORDFROMRECT
+message when in details view as described above.
+
+<H3>Landmark 5</H3>
+
+<P>This points out the processing of the CN_REALLOCPSZ notification.
+
+<H3>Landmark 6</H3>
+
+<P>This points out the addition of the detail view menu item.
+
+<H2>Summary</H2>
+
+<P>This month we learned a lot of things, namely how to setup the details
+view, how direct editing is performed and what the container expects from
+the application with regards to this, and how selection states are set,
+queried, and used.  We also saw how inadequate the documentation is when it
+contains so many examples of incorrect or incomplete information.
+
+<P>Now you have enough information to use the container well.  However, we're
+not done yet; next month, I will try to figure out some of the more
+advanced capabilities of the container such as record sharing and deltas.
+Stay tuned, same Bat-time, same Bat-channel!
+
+</TD>
+<TD WIDTH="10%">&nbsp;</TD>
+</TR>
+</TABLE>
+
+<!-- ====================================================== -->
+<!--                         Linkbar                        -->
+<!-- ====================================================== -->
+<P><IMG BORDER=0 WIDTH=560 HEIGHT=14 ALT="" USEMAP="#Linkbar"
+   SRC="../common/images/articlebar.gif">
+
+</BODY>
+</HTML>

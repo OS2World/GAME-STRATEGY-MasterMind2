@@ -1,0 +1,58 @@
+:TARGET.SUFFIXES
+:DEPENDENCY..c .obj .rc .res 
+:TARGET.all
+:DEPENDENCY.
+f:\projekte\mastermind\mmind.exe
+f:\projekte\mastermind\mastermind.exe
+:RULE..rc.res
+:ACTION.Compile::Resource Compiler
+:COMMAND.
+rc.exe -r %s %|dpfF.RES
+:RULE..c.obj
+:ACTION.Compile::C++ Compiler
+:COMMAND.
+icc.exe /DEbug /Ss /Ti /G5 /Fb /Fo"%|dpfF.obj" /C %s
+:TARGET.f:\projekte\mastermind\mastermind.exe
+:DEPENDENCY.
+f:\projekte\mastermind\main.obj
+f:\projekte\mastermind\mastermind.res
+f:\projekte\mastermind\global.res
+{$(LIB)}cppopa.lib
+makefile
+:ACTION.Link::Linker
+:COMMAND.
+icc.exe @<<
+ /B" /de /pmtype:pm /nop"
+ /Fef:\projekte\mastermind\mastermind.exe 
+ cppopa.lib 
+ f:\projekte\mastermind\main.obj
+<<
+:ACTION.Bind::Resource Bind
+:COMMAND.
+rc.exe f:\projekte\mastermind\mastermind.res f:\projekte\mastermind\mastermind.exe
+:ACTION.Bind::Resource Bind
+:COMMAND.
+rc.exe f:\projekte\mastermind\global.res f:\projekte\mastermind\mastermind.exe
+:TARGET.f:\projekte\mastermind\global.res
+:DEPENDENCY.
+f:\projekte\mastermind\global.rc
+{$(INCLUDE)}rosa.ptr
+{$(INCLUDE)}tuerkies.ptr
+{$(INCLUDE)}gruen.ptr
+{$(INCLUDE)}gelb.ptr
+{$(INCLUDE)}rot.ptr
+{$(INCLUDE)}blau.ptr
+{$(INCLUDE)}MMIND.ICO
+{$(INCLUDE)}defines.h
+makefile
+:TARGET.f:\projekte\mastermind\mastermind.res
+:DEPENDENCY.
+f:\projekte\mastermind\mastermind.rc
+{$(INCLUDE)}defines.h
+makefile
+:TARGET.f:\projekte\mastermind\main.obj
+:DEPENDENCY.
+f:\projekte\mastermind\main.c
+{f:\projekte\mastermind;$(INCLUDE);}defines.h
+{f:\projekte\mastermind;$(INCLUDE);}mastermind.h
+makefile
